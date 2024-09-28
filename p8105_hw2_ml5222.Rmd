@@ -26,3 +26,6 @@ subway_df =
   mutate(entry = ifelse(entry=='YES',TRUE,FALSE))
 ```
 
+This data set contains information about the NYC Subway. It contains variables about the various lines and subway stations, including the name, the stations location in latitude and longitude, the various routes it service, the types of entrances and weather its ADA compliant. 
+
+To clean this data first the column names were cleaned. Next some of the route variables were converted to character vectors. This was done to make all the routes the same, so they could be pivoted. That was the next step. After that the columns of interest were selected. Finally, the entry variable was converted to a logical vector. The final dementions of the table are 20548 rows x 10 columns.This data is realtivly tidy since we pivoted the route variales. 
