@@ -1,0 +1,28 @@
+---
+title: "HW2"
+author: "Miriam Lachs"
+date: "2024-09-27"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+# Problem 1 
+
+First let's import and clean the data
+
+```{r}
+subway_df =
+  read_csv("NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(route8 = as.character(route8),
+         route9 = as.character(route9),
+         route10 = as.character(route10),
+         route11 = as.character(route11)) %>% 
+  pivot_longer(cols = route1:route11,values_to = 'route',names_to = 'route_num')
+
+
+```
+
