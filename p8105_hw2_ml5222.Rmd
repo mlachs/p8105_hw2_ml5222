@@ -107,7 +107,7 @@ full_tw_df %>%
   sum()
 ```
 
-The total wieght collected by Professor trash wheel is 216.26 tons.
+The total weight collected by Professor trash wheel is 216.26 tons.
 
 ```{r}
 full_tw_df %>% 
@@ -116,4 +116,74 @@ full_tw_df %>%
   sum()
 ```
 
-the total number of cigarette butts collected by Gwynnda in June of 2022 was 18120
+The total number of cigarette butts collected by Gwynnda in June of 2022 was 18120
+
+## Problem 3
+
+Gather and clean the data sets
+```{r}
+bakers_df=
+  read_csv("gbb_datasets/bakers.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(baker_name," ", into=c('first_name','last_name'))
+bakes_df =
+  read_csv("gbb_datasets/bakes.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(baker = gsub('"','',baker))
+
+results_df =
+  read_csv("gbb_datasets/results.csv", skip = 2) %>% 
+  janitor::clean_names() %>% 
+  mutate(baker=ifelse((series==2&baker=='Joanne'),'Jo',baker))
+
+```
+
+Combine data sets
+```{r}
+full_gbb_df=
+ bakes_df %>% 
+  full_join(results_df, join_by(series==series,episode==episode,baker==baker)) %>% 
+  full_join(bakers_df, join_by(series==series,baker==first_name)) %>% 
+  mutate(first_name=baker) %>% 
+  select(series,episode,signature_bake,show_stopper,technical,result,first_name,last_name,baker_age,baker_occupation,hometown)
+
+
+write_csv(full_gbb_df, file = 'gbb_datasets/full_gbb.csv')
+
+```
+
+There were multiple different steps to cleaning and joining these data sets. For the bakers data set in order to be incorporated with the other data sets the bakers names needed to be split into first and last names. For the bakers data set, there were extra '"' in the some of the names that needed to be removed. This name continued to be a problem as it was under a different value in the results data set. 
+The final data set contains the information from all three detailing each episode, what was made, the resulting scores and placements of the bakes, and finally who baked them as well as details on those individual bakers. I found this problem to be particularly frustrating, especially coming from a data engineering background. In terms of data warehousing, data like the original data sets are separated on purpose to reduce unnecessary replication of information and to increase clarity and readability of data. This larger combined data set goes beyond joining useful information together and becomes so large it becomes cumbersome.
+
+```{r}
+star_df =
+full_gbb_df%>% 
+  select(series,episode, result,first_name,last_name) %>% 
+  filter((result=='WINNER'|result=='STAR BAKER')&series>4) %>% 
+  arrange(series,episode)
+```
+
+It seems like winning  Star Baker towards the end of season, may be indicative of winning overall. However it is not a guarantee There are cirtenly some surprises when just looking at this data, for example season 5 or season 10.
+
+```{r}
+
+viewers_df =
+  read_csv("gbb_datasets/viewers.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(cols = series_1:series_10,names_to = 'series', values_to = 'viewers',names_prefix = "series_") %>% 
+  mutate(series=as.numeric(series))
+
+viewers_df
+```
+
+```{r}
+viewers_df %>% 
+  filter(series==1) %>%
+  summarise(mean=mean(viewers, na.rm = TRUE))
+```
+
+```{r}
+viewers_df %>% 
+  filter(series==5) %>%
+  summarise(mean=mean(viewers, na.rm = TRUE))
+```
