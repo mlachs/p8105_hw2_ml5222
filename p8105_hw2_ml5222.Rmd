@@ -7,6 +7,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(readxl)
 ```
 
 # Problem 1 
@@ -68,3 +69,51 @@ subway_df %>%
   distinct(line,station_name,ada) %>% count(ada)
 ```
 There are 60 stations that serve the A train, 17 of which are ADA compliant.
+
+## Problem 2
+
+Load and clean Mr.Trash Wheel Data
+
+```{r}
+mr_tw_df=
+  read_excel('202309 Trash Wheel Collection Data.xlsx',sheet = 'Mr. Trash Wheel',range = 'A2:N586') %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = as.integer(sports_balls), trash_wheel ='MR', year = as.numeric(year), date=make_date(year,month(date),day(date)))
+
+professor_tw_df=
+  read_excel('202309 Trash Wheel Collection Data.xlsx',sheet = 'Professor Trash Wheel',range = 'A2:M108') %>% 
+  janitor::clean_names() %>% 
+  mutate(trash_wheel = 'PROFESSOR',date=make_date(year,month(date),day(date)))
+
+gwynnda_tw_df=
+  read_excel('202309 Trash Wheel Collection Data.xlsx',sheet = 'Gwynnda Trash Wheel',range = 'A2:L157') %>% 
+  janitor::clean_names() %>% 
+  mutate(trash_wheel = 'GWYNNDA',date=make_date(year,month(date),day(date)))
+```
+
+join the data sets
+
+```{r}
+full_tw_df= bind_rows(mr_tw_df,professor_tw_df,gwynnda_tw_df)
+
+```
+
+The full trash wheel data set is comprised of the data from three different trash wheels, Mr. Trash Wheel, Professor Trash Wheel and Gwynnda Trash Wheel. The data looks at trash collected from `r min(pull(full_tw_df,date))` to `r max(pull(full_tw_df,date))` with a total of `r count(full_tw_df)` observations. While there are `r length(full_tw_df)` variables only 13 are shared by all three wheels. The mean amount of trash collected is `r mean(pull(full_tw_df,weight_tons))` tons. While the total number of homes powered is `r sum(pull(full_tw_df,homes_powered))`. 
+
+```{r}
+full_tw_df %>% 
+  filter(trash_wheel=='PROFESSOR') %>% 
+  select(weight_tons) %>% 
+  sum()
+```
+
+The total wieght collected by Professor trash wheel is 216.26 tons.
+
+```{r}
+full_tw_df %>% 
+  filter(trash_wheel=='GWYNNDA',month=='June',year==2022) %>% 
+  select(cigarette_butts) %>% 
+  sum()
+```
+
+the total number of cigarette butts collected by Gwynnda in June of 2022 was 18120
